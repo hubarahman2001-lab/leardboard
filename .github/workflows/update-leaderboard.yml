@@ -18,7 +18,7 @@ jobs:
 
       - name: Download latest leaderboard
         run: |
-          curl -L "PASTE_YOUR_1DRV_LINK_HERE" -o leaderboard.json
+          curl -L "https://1drv.ms/u/c/efa322e5fea81d64/IQDeADwxuDj1Qaixwgxj9a5FAcZBu3d5ff9AsrVfwEllqnE?e=X56r4J" -o leaderboard.json
 
       - name: Show downloaded file
         run: |
