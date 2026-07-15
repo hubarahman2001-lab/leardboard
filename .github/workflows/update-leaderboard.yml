@@ -18,12 +18,13 @@ jobs:
 
       - name: Download latest leaderboard
         run: |
-          curl -L "https://1drv.ms/u/c/efa322e5fea81d64/IQDeADwxuDj1Qaixwgxj9a5FAcZBu3d5ff9AsrVfwEllqnE?e=X56r4J" -o leaderboard.json
+          curl -L "https://1drv.ms/u/c/efa322e5fea81d64/IQDeADwxuDj1Qaixwgxj9a5FAcZBu3d5ff9AsrVfwEllqnE?e=X56r4J&download=1" -o leaderboard.json
 
       - name: Show downloaded file
         run: |
-          ls -l
-          head -5 leaderboard.json
+          echo "----- START OF FILE -----"
+          head -20 leaderboard.json
+          echo "----- END OF FILE -----"
 
       - name: Commit changes
         run: |
@@ -38,3 +39,4 @@ jobs:
             git commit -m "Update leaderboard data"
             git push
           fi
+          
