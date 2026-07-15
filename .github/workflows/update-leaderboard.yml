@@ -1,0 +1,28 @@
+name: Update Leaderboard
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download latest JSON
+        run: |
+          curl -L "YOUR_ONEDRIVE_LINK_HERE" -o leaderboard.json
+
+      - name: Commit changes
+        run: |
+          git config user.name "leaderboard-bot"
+          git config user.email "actions@github.com"
+
+          git add leaderboard.json
+
+          git diff --quiet --cached || git commit -m "Update leaderboard"
+
+          git push
