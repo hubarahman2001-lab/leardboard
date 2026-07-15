@@ -144,6 +144,14 @@ if (searchInput) {
   });
 }
 </script>
-
+<script>
+function sendHeight() {
+  var height = document.body.scrollHeight;
+  window.parent.postMessage({ type: 'setHeight', height: height }, '*');
+}
+window.addEventListener('load', sendHeight);
+window.addEventListener('resize', sendHeight);
+setInterval(sendHeight, 1000);
+</script>
 </body>
 </html>
