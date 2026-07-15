@@ -5,16 +5,25 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   update:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Download latest JSON
+      - name: Download latest leaderboard
         run: |
-          curl -L "YOUR_ONEDRIVE_LINK_HERE" -o leaderboard.json
+          curl -L "PASTE_YOUR_1DRV_LINK_HERE" -o leaderboard.json
+
+      - name: Show downloaded file
+        run: |
+          ls -l
+          head -5 leaderboard.json
 
       - name: Commit changes
         run: |
@@ -23,6 +32,9 @@ jobs:
 
           git add leaderboard.json
 
-          git diff --quiet --cached || git commit -m "Update leaderboard"
-
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes detected"
+          else
+            git commit -m "Update leaderboard data"
+            git push
+          fi
