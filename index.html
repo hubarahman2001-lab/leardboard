@@ -202,35 +202,75 @@ fetch(DATA_URL)
     var searchHint = document.getElementById('searchHint');
     var boardCount = document.getElementById('boardCount');
 
+    var searchTimer = null;
+
+    function flash(el, revertBg) {
+      el.style.transition = 'background-color 0.25s ease';
+      el.style.backgroundColor = '#FFD866';
+      setTimeout(function () {
+        el.style.transition = 'background-color 0.6s ease';
+        el.style.backgroundColor = revertBg;
+      }, 650);
+    }
+
     searchInput.addEventListener('input', function (e) {
       var q = e.target.value.trim().toLowerCase();
       var tickets = document.querySelectorAll('.js-ticket');
       var rows = document.querySelectorAll('.js-row');
       var visibleRows = 0;
       var anyTicketHit = false;
+      var firstMatchEl = null;
+      var firstMatchRevertBg = '';
 
       for (var i = 0; i < tickets.length; i++) {
         var t = tickets[i];
-        var hit = q && (t.dataset.name.indexOf(q) > -1 || t.dataset.staff.indexOf(q) > -1);
+        var hit = !!(q && (t.dataset.name.indexOf(q) > -1 || t.dataset.staff.indexOf(q) > -1));
         t.style.boxShadow = hit ? '0 0 0 2px #5F639B' : 'none';
-        if (hit) anyTicketHit = true;
+        if (hit) {
+          anyTicketHit = true;
+          if (!firstMatchEl) { firstMatchEl = t; firstMatchRevertBg = '#FFFFFF'; }
+        }
       }
 
       for (var j = 0; j < rows.length; j++) {
         var r = rows[j];
-        var match = !q || r.dataset.name.indexOf(q) > -1 || r.dataset.staff.indexOf(q) > -1;
+        var isHit = !!(q && (r.dataset.name.indexOf(q) > -1 || r.dataset.staff.indexOf(q) > -1));
+        var match = !q || isHit;
         r.style.display = match ? 'grid' : 'none';
         r.style.background = (q && match) ? 'rgba(255,255,255,0.09)' : '';
         if (match) visibleRows++;
+        if (isHit && !firstMatchEl) { firstMatchEl = r; firstMatchRevertBg = 'rgba(255,255,255,0.09)'; }
       }
+
+      searchInput.style.borderColor = 'rgba(255,255,255,0.22)';
+      searchHint.style.color = 'rgba(255,255,255,0.5)';
+      searchHint.style.fontWeight = '600';
+      if (searchTimer) clearTimeout(searchTimer);
 
       if (!q) {
         searchHint.textContent = data.length + ' crew members checked in this week';
         boardCount.textContent = manifest.length + ' of ' + manifest.length;
       } else {
         var totalHits = visibleRows + (anyTicketHit ? 1 : 0);
-        searchHint.textContent = totalHits ? (totalHits + ' match' + (totalHits === 1 ? '' : 'es') + ' found') : 'No matches, try a different name or staff number';
         boardCount.textContent = visibleRows + ' of ' + manifest.length;
+
+        if (totalHits) {
+          searchHint.textContent = totalHits + ' match' + (totalHits === 1 ? '' : 'es') + ' found';
+          var target = firstMatchEl;
+          var revertBg = firstMatchRevertBg;
+          // Debounce so it doesn't jump/flash on every keystroke while typing
+          searchTimer = setTimeout(function () {
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              setTimeout(function () { flash(target, revertBg); }, 300);
+            }
+          }, 350);
+        } else {
+          searchHint.textContent = 'This name or staff number is not on the leaderboard.';
+          searchHint.style.color = '#FFB4B4';
+          searchHint.style.fontWeight = '700';
+          searchInput.style.borderColor = '#FFB4B4';
+        }
       }
     });
 
