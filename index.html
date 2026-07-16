@@ -67,9 +67,10 @@
     </div>
   </div>
 
-<div style="position:relative; height:64px; margin-top:10px; padding:0 40px;">
-    <div style="position:absolute; left:12px; bottom:8px; font-size:10px; font-weight:800; color:#1E1B2E; white-space:nowrap; line-height:1.2; text-align:center;">EMIRATES<br>GROUP</div> <div style="width:8px; height:8px; background:#1E1B2E; border-radius:50%; position:absolute; bottom:6.5px; left:80px;"></div>
-    <svg viewBox="0 0 720 60" preserveAspectRatio="none" style="position:absolute; top:0; left:40px; width:calc(100% - 80px); height:56px; overflow:visible;">
+  <div style="position:relative; height:64px; margin-top:10px; padding:0 40px;">
+    <span style="position:absolute; left:14px; bottom:10px; font-size:10px; font-weight:800; color:#1E1B2E; white-space:nowrap; line-height:1.3;">EMIRATES<br>GROUP</span>
+    <div style="width:8px; height:8px; background:#1E1B2E; border-radius:50%; position:absolute; bottom:5px; left:75px;"></div>
+    <svg viewBox="0 0 720 60" preserveAspectRatio="none" style="position:absolute; top:0; left:50px; width:calc(100% - 80px); height:56px; overflow:visible;">
       <path d="M 40,55 Q 360,-20 680,55" style="fill:none; stroke:#5F639B; stroke-width:1.5; stroke-dasharray:4,3; opacity:0.55;" />
       <g style="transform:translate(48px,32px) rotate(-8deg) scale(1.1);">
         <rect x="0" y="2" width="14" height="10" fill="#5F639B" rx="1.5"/>
@@ -78,25 +79,20 @@
         <circle cx="16" cy="13" r="2.5" fill="#1E1B2E"/>
       </g>
     </svg>
-    <span style="position:absolute; right:30px; bottom:18px; background:#5F639B; color:#FFFFFF; padding:2px 6px; border-radius:3px; font-size:9px; font-weight:800;">GOAL</span>
-    <div style="width:8px; height:8px; background:#E5E3EE; border-radius:50%; position:absolute; bottom:5px; right:60px;"></div>
+    <span style="position:absolute; right:26px; bottom:18px; background:#5F639B; color:#FFFFFF; padding:2px 6px; border-radius:3px; font-size:9px; font-weight:800;">GOAL</span>
+    <div style="width:8px; height:8px; background:#E5E3EE; border-radius:50%; position:absolute; bottom:5px; right:50px;"></div>
   </div>
 
-  <div style="padding:8px 40px 18px; font-size:9.5px; color:#8A8794; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; text-align:center; border-bottom:1px solid #E5E3EE;">Points earned from approved content, comments and shares &middot; Week 1 of 4</div>
+  <div style="padding:8px 40px 18px; font-size:9.5px; color:#8A8794; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; text-align:center; border-bottom:1px solid #E5E3EE;">Points earned  &middot; Week 1 of 4</div>
 
-  <div style="padding:20px 15px 6px;">
-    <div style="font-size:11px; font-weight:800; color:#8A8794; text-transform:uppercase; letter-spacing:0.8px; padding:0 15px 12px;">Top of the manifest</div>
-    <div id="podium" style="display:flex; flex-direction:column; gap:12px; padding:0 15px 8px;"></div>
-  </div>
-
-  <div style="padding:8px 15px 4px;">
+  <div style="padding:20px 15px 4px;">
     <div style="font-size:11px; font-weight:800; color:#8A8794; text-transform:uppercase; letter-spacing:0.8px; padding:14px 15px 10px; display:flex; justify-content:space-between; align-items:center;">
       <span>Full flight manifest</span> <span id="boardCount" style="font-family:'Courier New', Courier, monospace; font-weight:600; color:#B5B3AD;">&mdash;</span>
     </div>
     <div style="background:#211F3B; border-radius:10px; margin:0 15px 6px; overflow-x:auto;">
       <div style="min-width:420px;">
-        <div style="display:grid; grid-template-columns:44px 1fr 90px 90px; padding:10px 18px; font-size:9px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.6px; border-bottom:1px solid rgba(255,255,255,0.08);">
-          <span>Rank</span><span>Passenger</span><span>Staff #</span><span style="text-align:right;">Miles</span>
+        <div style="display:grid; grid-template-columns:44px 1fr 90px; padding:10px 18px; font-size:9px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.6px; border-bottom:1px solid rgba(255,255,255,0.08);">
+          <span>Rank</span><span>Passenger</span><span style="text-align:right;">Miles</span>
         </div>
         <div id="boardBody" style="max-height:520px; overflow-y:auto;"></div>
       </div>
@@ -112,6 +108,11 @@
 </div>
 
 <script>
+// Loads crew data from leaderboard.json, renders the full manifest table,
+// and wires up the live search filter.
+
+var DATA_URL = './leaderboard.json';
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -120,39 +121,13 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function renderTicket(p) {
-  return (
-    '<div class="js-ticket" data-name="' + escapeHtml(p.name.toLowerCase()) + '" data-staff="' + escapeHtml(p.staff.toLowerCase()) + '" ' +
-    'style="border-radius:10px; display:flex; border:1px solid #E5E3EE; overflow:hidden; background:#FFFFFF;">' +
-      '<div style="padding:18px 22px; flex-grow:1; display:grid; grid-template-columns:2fr 1fr 1fr; row-gap:13px; align-items:end;">' +
-        '<div><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Passenger</span>' +
-        '<span style="font-size:17px; font-weight:900; color:#1E1B2E;">' + escapeHtml(p.name) + '</span></div>' +
-        '<div><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Miles</span>' +
-        '<span style="font-size:17px; font-weight:900; color:#1E1B2E;">' + p.points + '</span></div>' +
-        '<div style="text-align:right;"><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Flight</span>' +
-        '<span style="font-size:13px; font-weight:900; color:#5F639B;">LEARNX101</span></div>' +
-        '<div><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Rank</span>' +
-        '<span style="font-size:14px; font-weight:900; color:#1E1B2E;">#' + p.rank + ' &#127873;</span></div>' +
-        '<div><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Staff #</span>' +
-        '<span style="font-family:\'Courier New\', Courier, monospace; font-size:12px; font-weight:600; color:#8A8794;">' + escapeHtml(p.staff) + '</span></div>' +
-        '<div style="text-align:right;"></div>' + 
-      '</div>' +
-      '<div style="width:86px; display:flex; flex-direction:column; justify-content:center; align-items:center; border-left:2px dashed #FFFFFF; color:#FFFFFF; flex-shrink:0; background:linear-gradient(160deg,#8B85C4,#433C7C);">' +
-        '<span style="font-size:9.5px; font-weight:800; margin-bottom:2px; opacity:0.9;">SEAT</span>' +
-        '<span style="font-size:24px; font-weight:900; font-family:\'Courier New\', Courier, monospace;">1A</span>' +
-      '</div>' +
-    '</div>'
-  );
-}
-
 function renderRow(p, idx) {
   var bg = idx % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent';
   return (
-    '<div class="js-row" data-name="' + escapeHtml(p.name.toLowerCase()) + '" data-staff="' + escapeHtml(p.staff.toLowerCase()) + '" ' +
-    'style="display:grid; grid-template-columns:44px 1fr 90px 90px; align-items:center; padding:10px 18px; font-family:\'Courier New\', Courier, monospace; border-bottom:1px solid rgba(255,255,255,0.05); background:' + bg + ';">' +
+    '<div class="js-row" data-name="' + escapeHtml(p.name.toLowerCase()) + '" ' +
+    'style="display:grid; grid-template-columns:44px 1fr 90px; align-items:center; padding:10px 18px; font-family:\'Courier New\', Courier, monospace; border-bottom:1px solid rgba(255,255,255,0.05); background:' + bg + ';">' +
       '<span style="color:rgba(255,255,255,0.45); font-size:12px;">#' + p.rank + ' &#127873;</span>' +
       '<span style="font-family:Arial, Helvetica, sans-serif; font-weight:700; font-size:13px; color:#FFFFFF; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">' + escapeHtml(p.name) + '</span>' +
-      '<span style="color:rgba(255,255,255,0.5); font-size:11px;">' + escapeHtml(p.staff) + '</span>' +
       '<span style="text-align:right; font-weight:700; color:#FFFFFF; font-size:12.5px;">' + p.points + '</span>' +
     '</div>'
   );
@@ -167,126 +142,91 @@ function formatTimestamp(d) {
   return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' &middot; ' + h + ':' + mm + ' ' + ampm;
 }
 
-function initializeBoard(data) {
-  data.sort(function (a, b) { return a.rank - b.rank; });
+fetch(DATA_URL)
+  .then(function (res) { return res.json(); })
+  .then(function (data) {
+    data.sort(function (a, b) { return a.rank - b.rank; });
 
-  var podium = data.slice(0, 10);
-  var manifest = data.slice(10);
+    document.getElementById('boardBody').innerHTML = data.map(renderRow).join('');
+    document.getElementById('boardCount').textContent = data.length + ' of ' + data.length;
+    document.getElementById('searchHint').textContent = data.length + ' crew members checked in this week';
+    document.getElementById('lastRefresh').innerHTML = 'Last refresh:<br>' + formatTimestamp(new Date());
 
-  document.getElementById('podium').innerHTML = podium.map(renderTicket).join('');
-  document.getElementById('boardBody').innerHTML = manifest.map(renderRow).join('');
-  document.getElementById('boardCount').textContent = manifest.length + ' of ' + manifest.length;
-  document.getElementById('searchHint').textContent = data.length + ' crew members checked in this week';
-  document.getElementById('lastRefresh').innerHTML = 'Last refresh:<br>' + formatTimestamp(new Date());
+    var searchInput = document.getElementById('searchInput');
+    var searchHint = document.getElementById('searchHint');
+    var boardCount = document.getElementById('boardCount');
 
-  var searchInput = document.getElementById('searchInput');
-  var searchHint = document.getElementById('searchHint');
-  var boardCount = document.getElementById('boardCount');
-  var searchDebounceTimer = null;
+    var searchTimer = null;
 
-  function flash(el, revertBg) {
-    el.style.transition = 'background-color 0.25s ease';
-    el.style.backgroundColor = '#FFD866';
-    setTimeout(function () {
-      el.style.transition = 'background-color 0.6s ease';
-      el.style.backgroundColor = revertBg;
-    }, 650);
-  }
+    function flash(el, revertBg) {
+      el.style.transition = 'background-color 0.25s ease';
+      el.style.backgroundColor = '#FFD866';
+      setTimeout(function () {
+        el.style.transition = 'background-color 0.6s ease';
+        el.style.backgroundColor = revertBg;
+      }, 650);
+    }
 
-  function performSearch(q) {
-    var tickets = document.querySelectorAll('.js-ticket');
-    var rows = document.querySelectorAll('.js-row');
-    var visibleRows = 0;
-    var anyTicketHit = false;
-    var firstMatchEl = null;
-    var firstMatchRevertBg = '';
+    searchInput.addEventListener('input', function (e) {
+      var q = e.target.value.trim().toLowerCase();
+      var rows = document.querySelectorAll('.js-row');
+      var visibleRows = 0;
+      var firstMatchEl = null;
 
-    for (var i = 0; i < tickets.length; i++) {
-      var t = tickets[i];
-      var hit = !!(q && (t.dataset.name.indexOf(q) > -1 || t.dataset.staff.indexOf(q) > -1));
-      t.style.boxShadow = hit ? '0 0 0 2px #5F639B' : 'none';
-      if (hit) {
-        anyTicketHit = true;
-        if (!firstMatchEl) { firstMatchEl = t; firstMatchRevertBg = '#FFFFFF'; }
+      for (var j = 0; j < rows.length; j++) {
+        var r = rows[j];
+        var isHit = !!(q && r.dataset.name.indexOf(q) > -1);
+        var match = !q || isHit;
+        r.style.display = match ? 'grid' : 'none';
+        r.style.background = (q && match) ? 'rgba(255,255,255,0.09)' : '';
+        if (match) visibleRows++;
+        if (isHit && !firstMatchEl) firstMatchEl = r;
       }
-    }
 
-    for (var j = 0; j < rows.length; j++) {
-      var r = rows[j];
-      var isHit = !!(q && (r.dataset.name.indexOf(q) > -1 || r.dataset.staff.indexOf(q) > -1));
-      var match = !q || isHit;
-      r.style.display = match ? 'grid' : 'none';
-      r.style.background = (q && match) ? 'rgba(255,255,255,0.09)' : '';
-      if (match) visibleRows++;
-      if (isHit && !firstMatchEl) { firstMatchEl = r; firstMatchRevertBg = 'rgba(255,255,255,0.09)'; }
-    }
+      searchInput.style.borderColor = 'rgba(255,255,255,0.22)';
+      searchHint.style.color = 'rgba(255,255,255,0.5)';
+      searchHint.style.fontWeight = '600';
+      if (searchTimer) clearTimeout(searchTimer);
 
-    searchInput.style.borderColor = 'rgba(255,255,255,0.22)';
-    searchHint.style.color = 'rgba(255,255,255,0.5)';
-    searchHint.style.fontWeight = '600';
-
-    if (!q) {
-      searchHint.textContent = data.length + ' crew members checked in this week';
-      boardCount.textContent = manifest.length + ' of ' + manifest.length;
-    } else {
-      var totalHits = visibleRows + (anyTicketHit ? 1 : 0);
-      boardCount.textContent = visibleRows + ' of ' + manifest.length;
-
-      if (totalHits) {
-        searchHint.textContent = totalHits + ' match' + (totalHits === 1 ? '' : 'es') + ' found';
-        var target = firstMatchEl;
-        var revertBg = firstMatchRevertBg;
-        
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          setTimeout(function () { flash(target, revertBg); }, 300);
-        }
+      if (!q) {
+        searchHint.textContent = data.length + ' crew members checked in this week';
+        boardCount.textContent = data.length + ' of ' + data.length;
       } else {
-        searchHint.textContent = 'This name or staff number is not on the leaderboard.';
-        searchHint.style.color = '#FFB4B4';
-        searchHint.style.fontWeight = '700';
-        searchInput.style.borderColor = '#FFB4B4';
+        boardCount.textContent = visibleRows + ' of ' + data.length;
+
+        if (visibleRows) {
+          searchHint.textContent = visibleRows + ' match' + (visibleRows === 1 ? '' : 'es') + ' found';
+          var target = firstMatchEl;
+          // Only scroll once typing actually pauses, not on every keystroke
+          searchTimer = setTimeout(function () {
+            if (target && searchInput.value.trim().toLowerCase() === q) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              setTimeout(function () { flash(target, 'rgba(255,255,255,0.09)'); }, 300);
+            }
+          }, 900);
+        } else {
+          searchHint.textContent = 'This name is not on the leaderboard.';
+          searchHint.style.color = '#FFB4B4';
+          searchHint.style.fontWeight = '700';
+          searchInput.style.borderColor = '#FFB4B4';
+        }
       }
-    }
-  }
+    });
 
-  searchInput.addEventListener('input', function (e) {
-    var q = e.target.value.trim().toLowerCase();
-    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
-    
-    searchDebounceTimer = setTimeout(function() {
-      performSearch(q);
-    }, 500); 
+    sendHeight();
+  })
+  .catch(function (err) {
+    document.getElementById('searchHint').textContent = 'Could not load manifest data.';
+    console.error(err);
   });
-
-  searchInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
-      performSearch(e.target.value.trim().toLowerCase());
-      e.preventDefault();
-    }
-  });
-
-  sendHeight();
-}
 
 function sendHeight() {
   var height = document.body.scrollHeight;
   window.parent.postMessage({ type: 'setHeight', height: height }, '*');
 }
-
-// Fetch your data here
-window.addEventListener('load', function() {
-  fetch('./leaderboard.json')
-    .then(response => response.json())
-    .then(data => {
-      initializeBoard(data);
-    })
-    .catch(error => {
-      console.error('Error loading data:', error);
-      document.getElementById('searchHint').textContent = "Failed to load manifest.";
-    });
-});
+window.addEventListener('load', sendHeight);
+window.addEventListener('resize', sendHeight);
+setInterval(sendHeight, 1000);
 </script>
 </body>
 </html>
