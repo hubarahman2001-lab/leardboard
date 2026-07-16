@@ -84,10 +84,7 @@
 
   <div style="padding:8px 40px 18px; font-size:9.5px; color:#8A8794; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; text-align:center; border-bottom:1px solid #E5E3EE;">Points earned from approved content, comments and shares &middot; Week 1 of 4</div>
 
-  <div style="padding:20px 15px 6px;">
-    <div style="font-size:11px; font-weight:800; color:#8A8794; text-transform:uppercase; letter-spacing:0.8px; padding:0 15px 12px;">Top of the manifest</div>
-    <div id="podium" style="display:flex; flex-direction:column; gap:12px; padding:0 15px 8px;"></div>
-  </div>
+  
 
   <div style="padding:8px 15px 4px;">
     <div style="font-size:11px; font-weight:800; color:#8A8794; text-transform:uppercase; letter-spacing:0.8px; padding:14px 15px 10px; display:flex; justify-content:space-between; align-items:center;">
@@ -120,29 +117,6 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function renderTicket(p) {
-  return (
-    '<div class="js-ticket" data-name="' + escapeHtml(p.name.toLowerCase()) + '" data-staff="' + escapeHtml(p.staff.toLowerCase()) + '" ' +
-    'style="border-radius:10px; display:flex; border:1px solid #E5E3EE; overflow:hidden; background:#FFFFFF;">' +
-      '<div style="padding:18px 22px; flex-grow:1; display:grid; grid-template-columns:2fr 1fr 1fr; row-gap:13px; align-items:end;">' +
-        '<div><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Passenger</span>' +
-        '<span style="font-size:17px; font-weight:900; color:#1E1B2E;">' + escapeHtml(p.name) + '</span></div>' +
-        '<div><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Miles</span>' +
-        '<span style="font-size:17px; font-weight:900; color:#1E1B2E;">' + p.points + '</span></div>' +
-        '<div style="text-align:right;"><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Flight</span>' +
-        '<span style="font-size:13px; font-weight:900; color:#5F639B;">LEARNX101</span></div>' +
-        '<div><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Rank</span>' +
-        '<span style="font-size:14px; font-weight:900; color:#1E1B2E;">#' + p.rank + ' &#127873;</span></div>' +
-        '<div><span style="display:block; font-size:9.5px; font-weight:700; color:#8A8794; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.3px;">Staff #</span>' +
-        '<span style="font-family:\'Courier New\', Courier, monospace; font-size:12px; font-weight:600; color:#8A8794;">' + escapeHtml(p.staff) + '</span></div>' +
-        '<div style="text-align:right;"></div>' + 
-      '</div>' +
-      '<div style="width:86px; display:flex; flex-direction:column; justify-content:center; align-items:center; border-left:2px dashed #FFFFFF; color:#FFFFFF; flex-shrink:0; background:linear-gradient(160deg,#8B85C4,#433C7C);">' +
-        '<span style="font-size:9.5px; font-weight:800; margin-bottom:2px; opacity:0.9;">SEAT</span>' +
-        '<span style="font-size:24px; font-weight:900; font-family:\'Courier New\', Courier, monospace;">1A</span>' +
-      '</div>' +
-    '</div>'
-  );
 }
 
 function renderRow(p, idx) {
@@ -170,10 +144,9 @@ function formatTimestamp(d) {
 function initializeBoard(data) {
   data.sort(function (a, b) { return a.rank - b.rank; });
 
-  var podium = data.slice(0, 10);
-  var manifest = data.slice(10);
+ 
 
-  document.getElementById('podium').innerHTML = podium.map(renderTicket).join('');
+
   document.getElementById('boardBody').innerHTML = manifest.map(renderRow).join('');
   document.getElementById('boardCount').textContent = manifest.length + ' of ' + manifest.length;
   document.getElementById('searchHint').textContent = data.length + ' crew members checked in this week';
@@ -193,23 +166,7 @@ function initializeBoard(data) {
     }, 650);
   }
 
-  function performSearch(q) {
-    var tickets = document.querySelectorAll('.js-ticket');
-    var rows = document.querySelectorAll('.js-row');
-    var visibleRows = 0;
-    var anyTicketHit = false;
-    var firstMatchEl = null;
-    var firstMatchRevertBg = '';
-
-    for (var i = 0; i < tickets.length; i++) {
-      var t = tickets[i];
-      var hit = !!(q && (t.dataset.name.indexOf(q) > -1 || t.dataset.staff.indexOf(q) > -1));
-      t.style.boxShadow = hit ? '0 0 0 2px #5F639B' : 'none';
-      if (hit) {
-        anyTicketHit = true;
-        if (!firstMatchEl) { firstMatchEl = t; firstMatchRevertBg = '#FFFFFF'; }
-      }
-    }
+  function performSearch(q) 
 
     for (var j = 0; j < rows.length; j++) {
       var r = rows[j];
@@ -229,7 +186,6 @@ function initializeBoard(data) {
       searchHint.textContent = data.length + ' crew members checked in this week';
       boardCount.textContent = manifest.length + ' of ' + manifest.length;
     } else {
-      var totalHits = visibleRows + (anyTicketHit ? 1 : 0);
       boardCount.textContent = visibleRows + ' of ' + manifest.length;
 
       if (totalHits) {
