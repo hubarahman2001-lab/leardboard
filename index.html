@@ -277,7 +277,7 @@ function sendHeight() {
 
 // Fetch your data here
 window.addEventListener('load', function() {
-  fetch('YOUR_API_ENDPOINT_HERE')
+  fetch('./leaderboard.json')
     .then(response => response.json())
     .then(data => {
       initializeBoard(data);
@@ -287,9 +287,6 @@ window.addEventListener('load', function() {
       document.getElementById('searchHint').textContent = "Failed to load manifest.";
     });
 });
-
-window.addEventListener('resize', sendHeight);
-setInterval(sendHeight, 1000);
 </script>
 </body>
 </html>
