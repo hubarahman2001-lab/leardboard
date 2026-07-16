@@ -117,8 +117,6 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-}
-
 function renderRow(p, idx) {
   var bg = idx % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent';
   return (
@@ -143,10 +141,7 @@ function formatTimestamp(d) {
 
 function initializeBoard(data) {
   data.sort(function (a, b) { return a.rank - b.rank; });
-
- 
-
-
+var manifest = data;
   document.getElementById('boardBody').innerHTML = manifest.map(renderRow).join('');
   document.getElementById('boardCount').textContent = manifest.length + ' of ' + manifest.length;
   document.getElementById('searchHint').textContent = data.length + ' crew members checked in this week';
@@ -166,7 +161,11 @@ function initializeBoard(data) {
     }, 650);
   }
 
-  function performSearch(q) 
+  function performSearch(q) {
+    var rows = document.querySelectorAll('.js-row');
+var visibleRows = 0;
+var firstMatchEl = null;
+var firstMatchRevertBg = '';
 
     for (var j = 0; j < rows.length; j++) {
       var r = rows[j];
@@ -187,7 +186,7 @@ function initializeBoard(data) {
       boardCount.textContent = manifest.length + ' of ' + manifest.length;
     } else {
       boardCount.textContent = visibleRows + ' of ' + manifest.length;
-
+var totalHits = visibleRows;
       if (totalHits) {
         searchHint.textContent = totalHits + ' match' + (totalHits === 1 ? '' : 'es') + ' found';
         var target = firstMatchEl;
