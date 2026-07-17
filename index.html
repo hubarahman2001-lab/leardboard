@@ -144,15 +144,26 @@ function formatTimestamp(d) {
   return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' &middot; ' + h + ':' + mm + ' ' + ampm;
 }
 
+function formatLastUpdated(payload) {
+  var iso = (payload && !Array.isArray(payload)) ? payload.lastUpdated : null;
+  if (!iso) return '&mdash;';
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return '&mdash;';
+  return formatTimestamp(d);
+}
+
 fetch(DATA_URL)
   .then(function (res) { return res.json(); })
-  .then(function (data) {
+  .then(function (payload) {
+    // Supports both the new {lastUpdated, entries} shape and a plain array
+    // (old format), so nothing breaks mid-transition.
+    var data = Array.isArray(payload) ? payload : (payload.entries || []);
     data.sort(function (a, b) { return a.rank - b.rank; });
 
     document.getElementById('boardBody').innerHTML = data.map(renderRow).join('');
     document.getElementById('boardCount').textContent = data.length + ' of ' + data.length;
     document.getElementById('searchHint').textContent = data.length + ' crew members checked in this week';
-    document.getElementById('lastRefresh').innerHTML = 'Last refresh:<br>' + formatTimestamp(new Date());
+    document.getElementById('lastRefresh').innerHTML = 'Last refresh:<br>' + formatLastUpdated(payload);
 
     var searchInput = document.getElementById('searchInput');
     var searchHint = document.getElementById('searchHint');
