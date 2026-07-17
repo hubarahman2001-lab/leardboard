@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LearnX Boarding Pass</title>
 </head>
-<body style="font-family:Arial, Helvetica, sans-serif; background:#F7F6FB; margin:0; padding:40px 20px 80px; color:#1E1B2E;">
+<body style="font-family:Arial, Helvetica, sans-serif; background:#F7F6FB; margin:0; padding:0; color:#1E1B2E;">
 
-<div style="max-width:840px; margin:0 auto;">
-<div style="background:#FFFFFF; border:1px solid #E5E3EE; border-radius:14px; box-shadow:0 4px 20px rgba(30,27,46,0.07); overflow:hidden; position:relative;">
+<div style="width:100%; margin:0;">
+<div style="background:#FFFFFF; border:1px solid #E5E3EE; overflow:hidden; position:relative;">
 
   <div style="background:linear-gradient(135deg,#211F3B 0%,#33305C 55%,#5F639B 100%); padding:28px 32px 24px; color:#FFFFFF; position:relative;">
 
@@ -32,7 +32,7 @@
 
     <div style="position:relative; margin-top:20px;">
       <span style="position:absolute; left:13px; top:50%; transform:translateY(-50%); font-size:14px; opacity:0.7;">&#8981;</span>
-      <input type="text" id="searchInput" placeholder="Find yourself, type your name or staff number" autocomplete="off"
+      <input type="text" id="searchInput" placeholder="Find yourself, type your name" autocomplete="off"
         style="width:100%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.22); border-radius:9px; padding:11px 14px 11px 38px; font-family:'Courier New', Courier, monospace; font-size:13px; color:#FFFFFF; outline:none; box-sizing:border-box;">
     </div>
     <div id="searchHint" style="font-size:9.5px; color:rgba(255,255,255,0.5); margin-top:6px; font-weight:600; letter-spacing:0.3px;">Loading crew manifest&hellip;</div>
@@ -112,7 +112,7 @@
 // and wires up the live search filter.
 
 var DATA_URL = './leaderboard.json';
-var GIFT_RANK_CUTOFF = 100; // only rank <= this gets the gift emoji
+var TOP_TIER_CUTOFF = 100; // rows at or below this rank get the gradient highlight
 
 function escapeHtml(str) {
   return String(str)
@@ -123,13 +123,15 @@ function escapeHtml(str) {
 }
 
 function renderRow(p, idx) {
-  var bg = idx % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent';
-  var gift = p.rank <= GIFT_RANK_CUTOFF ? ' &#127873;' : '';
+  var isTopTier = p.rank <= TOP_TIER_CUTOFF;
+  var bg = isTopTier
+    ? 'linear-gradient(90deg, rgba(139,133,196,0.38) 0%, rgba(95,99,155,0.14) 55%, transparent 100%)'
+    : (idx % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent');
   return (
-    '<div class="js-row" data-name="' + escapeHtml(p.name.toLowerCase()) + '" ' +
+    '<div class="js-row" data-name="' + escapeHtml(p.name.toLowerCase()) + '" data-bg="' + escapeHtml(bg) + '" ' +
     'style="display:grid; grid-template-columns:44px 1fr 90px; align-items:center; padding:10px 18px; font-family:\'Courier New\', Courier, monospace; border-bottom:1px solid rgba(255,255,255,0.05); background:' + bg + ';">' +
       '<span style="color:rgba(255,255,255,0.45); font-size:12px;">#' + p.rank + '</span>' +
-      '<span style="font-family:Arial, Helvetica, sans-serif; font-weight:700; font-size:13px; color:#FFFFFF; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">' + escapeHtml(p.name) + gift + '</span>' +
+      '<span style="font-family:Arial, Helvetica, sans-serif; font-weight:700; font-size:13px; color:#FFFFFF; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">' + escapeHtml(p.name) + '</span>' +
       '<span style="text-align:right; font-weight:700; color:#FFFFFF; font-size:12.5px;">' + p.points + '</span>' +
     '</div>'
   );
@@ -183,16 +185,16 @@ fetch(DATA_URL)
     searchInput.addEventListener('input', function (e) {
       var q = e.target.value.trim().toLowerCase();
       var rows = document.querySelectorAll('.js-row');
-      var visibleRows = 0;
+      var matchCount = 0;
       var firstMatchEl = null;
 
       for (var j = 0; j < rows.length; j++) {
         var r = rows[j];
         var isHit = !!(q && r.dataset.name.indexOf(q) > -1);
-        var match = !q || isHit;
-        r.style.display = match ? 'grid' : 'none';
-        r.style.background = (q && match) ? 'rgba(255,255,255,0.09)' : '';
-        if (match) visibleRows++;
+        // Never hide rows — just glow the ones that match, everyone else
+        // keeps their normal look (including the top-100 gradient).
+        r.style.background = isHit ? 'rgba(255,255,255,0.16)' : r.dataset.bg;
+        if (isHit) matchCount++;
         if (isHit && !firstMatchEl) firstMatchEl = r;
       }
 
@@ -205,16 +207,16 @@ fetch(DATA_URL)
         searchHint.textContent = data.length + ' crew members checked in this week';
         boardCount.textContent = data.length + ' of ' + data.length;
       } else {
-        boardCount.textContent = visibleRows + ' of ' + data.length;
+        boardCount.textContent = matchCount + ' match' + (matchCount === 1 ? '' : 'es');
 
-        if (visibleRows) {
-          searchHint.textContent = visibleRows + ' match' + (visibleRows === 1 ? '' : 'es') + ' found';
+        if (matchCount) {
+          searchHint.textContent = matchCount + ' match' + (matchCount === 1 ? '' : 'es') + ' found';
           var target = firstMatchEl;
           // Only scroll once typing actually pauses, not on every keystroke
           searchTimer = setTimeout(function () {
             if (target && searchInput.value.trim().toLowerCase() === q) {
               target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              setTimeout(function () { flash(target, 'rgba(255,255,255,0.09)'); }, 300);
+              setTimeout(function () { flash(target, 'rgba(255,255,255,0.16)'); }, 300);
             }
           }, 900);
         } else {
