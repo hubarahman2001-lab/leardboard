@@ -1,0 +1,52 @@
+name: Stamp Last Updated
+
+on:
+  push:
+    paths:
+      - 'leaderboard.json'
+
+permissions:
+  contents: write
+
+jobs:
+  stamp:
+    # Skip when the bot's own commit triggers this again — prevents an infinite loop
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Stamp lastUpdated onto leaderboard.json
+        run: |
+          python3 - <<'EOF'
+          import json, datetime
+
+          with open('leaderboard.json', 'r', encoding='utf-8') as f:
+              data = json.load(f)
+
+          # Accepts either a bare array (old format) or the
+          # {lastUpdated, entries} object — normalizes to the latter.
+          entries = data if isinstance(data, list) else data.get('entries', [])
+
+          now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+          out = {'lastUpdated': now, 'entries': entries}
+
+          with open('leaderboard.json', 'w', encoding='utf-8') as f:
+              json.dump(out, f, indent=2)
+              f.write('\n')
+          EOF
+
+      - name: Commit the stamped file
+        run: |
+          git config user.name "leaderboard-bot"
+          git config user.email "actions@github.com"
+          git add leaderboard.json
+          if git diff --cached --quiet; then
+            echo "No changes to stamp"
+          else
+            git commit -m "Stamp lastUpdated [skip ci]"
+            git push
+          fi
